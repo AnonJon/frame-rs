@@ -1,7 +1,11 @@
 [package]
-name = "frame-rs"
+name = "frame_rs"
 version = "0.1.0"
 edition = "2021"
+description = "A Frame wallet client written in rust to programmatically change the provider network for Frame's Omnichain setup."
+license = "MIT"
+repository = "https://github.com/AnonJon/frame-rs"
+documentation = "https://docs.rs/oz_merkle_rs"
 
 [dependencies]
 ethers = "2.0.0"
