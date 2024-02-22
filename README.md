@@ -37,8 +37,8 @@ async fn main() -> Result<()> {
     let client = FrameClient::new(U256::from(1)).await?; // Ethereum Mainnet
 
     // Switch to Arbitrum One
-    let rinkeby_chain_id = U256::from(42161);
-    client.switch_network(rinkeby_chain_id).await?;
+    let arbitrum_chain_id = U256::from(42161);
+    client.switch_network(arbitrum_chain_id).await?;
 
     println!("Successfully switched to Arbitrum One.");
     Ok(())

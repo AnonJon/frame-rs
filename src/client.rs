@@ -2,7 +2,7 @@ use anyhow::{bail, Result};
 use ethers::{
     middleware::Middleware,
     providers::{Http, Provider},
-    types::U256,
+    types::{Address, TransactionRequest, H256, U256},
 };
 use reqwest::Client;
 use serde_json::json;
@@ -155,6 +155,87 @@ impl FrameClient {
         }
 
         Ok(())
+    }
+
+    /// Sends a specified amount of the native gas token (e.g., ETH on Ethereum) from one address to another.
+    ///
+    /// This asynchronous method constructs and sends a transaction that transfers the native
+    /// blockchain currency (like ETH) from the specified sender address to the recipient address.
+    ///
+    /// # Parameters
+    /// - `from`: The `Address` from which the gas token will be sent.
+    /// - `to`: The `Address` to which the gas token will be sent.
+    /// - `amount`: The amount of the gas token to send, specified in Wei as a `U256`.
+    ///
+    /// # Returns
+    /// Returns a `Result` that, on success, wraps the `H256` transaction hash of the sent transaction.
+    /// If the transaction fails to send, an error is returned detailing the failure.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use ethers::types::{Address, U256};
+    /// use frame_rs::FrameClient;
+    /// use anyhow::Result;
+    ///
+    /// #[tokio::main]
+    /// async fn main() -> Result<()> {
+    ///     let client = FrameClient::new(U256::from(1)).await?;
+    ///     let from: Address = "0x...".parse()?;
+    ///     let to: Address = "0x...".parse()?;
+    ///     let amount = U256::from(1000000000000000000u64); // 1 ETH in Wei
+    ///
+    ///     let tx_hash = client.send_gas_token(from, to, amount).await?;
+    ///     println!("Transaction hash: {:?}", tx_hash);
+    ///     Ok(())
+    /// }
+    /// ```
+    ///
+    /// # Errors
+    /// Returns an error if the transaction fails to be sent or if there is an issue with
+    /// the transaction's execution.
+    pub async fn send_gas_token(&self, from: Address, to: Address, amount: U256) -> Result<H256> {
+        let tx = TransactionRequest::new().from(from).to(to).value(amount);
+        let pending_tx = self.provider.send_transaction(tx, None).await?;
+        let tx_receipt = pending_tx.await?;
+        if let Some(tx_hash) = tx_receipt {
+            return Ok(tx_hash.transaction_hash);
+        }
+
+        bail!("Tx failed to send");
+    }
+
+    /// Retrieves a list of addresses owned by the connected wallet.
+    ///
+    /// This asynchronous method queries the connected Ethereum provider (e.g., Frame) for
+    /// the list of accounts it manages.
+    ///
+    /// # Returns
+    /// Returns a `Result` that, on success, wraps a vector of `Address`es representing the
+    /// accounts managed by the connected provider. If the query fails, an error is returned
+    /// with details about the failure.
+    ///
+    /// # Examples
+    /// ```no_run
+    /// use frame_rs::FrameClient;
+    /// use anyhow::Result;
+    ///
+    /// #[tokio::main]
+    /// async fn main() -> Result<()> {
+    ///     let client = FrameClient::new(U256::from(1)).await?;
+    ///     let accounts = client.get_accounts().await?;
+    ///
+    ///     for account in accounts {
+    ///         println!("Account address: {:?}", account);
+    ///     }
+    ///     Ok(())
+    /// }
+    /// ```
+    ///
+    /// # Errors
+    /// Returns an error if there is an issue fetching the accounts from the connected provider.
+    pub async fn get_accounts(&self) -> Result<Vec<Address>> {
+        let accounts = self.provider.get_accounts().await?;
+        Ok(accounts)
     }
 }
 
