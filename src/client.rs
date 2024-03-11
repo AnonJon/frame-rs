@@ -40,7 +40,7 @@ impl FrameClient {
     /// #[tokio::main]
     /// async fn main() -> Result<(), Box<dyn std::error::Error>> {
     ///     let chain_id = U256::from(1); // Ethereum Mainnet
-    ///     let client = FrameClient::new(chain_id, None).await?;
+    ///     let client = FrameClient::new(chain_id, Some("0.0.0.0")).await?;
     ///
     ///     Ok(())
     /// }
