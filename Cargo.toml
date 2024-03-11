@@ -6,6 +6,17 @@ description = "A Frame wallet client written in rust to programmatically change 
 license = "MIT"
 repository = "https://github.com/AnonJon/frame-rs"
 documentation = "https://docs.rs/frame-rs"
+keywords = [
+    "frame",
+    "wallet",
+    "omnichain",
+    "ethereum",
+    "network",
+    "provider",
+    "client",
+    "rust",
+    "json-rpc",
+]
 
 [dependencies]
 ethers = "2.0.0"
