@@ -24,6 +24,8 @@ impl FrameClient {
     /// - `chain_id`: The chain ID of the Ethereum network you want to connect to. This must be provided
     /// as a `U256` value that corresponds to the desired network. For example, to connect to the Ethereum
     /// Mainnet, you would pass `U256::from(1)`.
+    /// - `host`: The host address of the Frame wallet's RPC endpoint. This is optional and defaults to
+    /// 127.0.0.1. If the Frame wallet is running on a different host, you can specify it here.
     ///
     /// # Returns
     /// Returns a `Result` wrapping a new `FrameClient` instance if the connection and network switch
@@ -33,12 +35,12 @@ impl FrameClient {
     /// # Examples
     /// ```no_run
     /// use ethers::types::U256;
-    /// use frame_rs::FrameClient; // Adjust this to the actual path where FrameClient is defined
+    /// use frame_rs::client::FrameClient;
     ///
     /// #[tokio::main]
     /// async fn main() -> Result<(), Box<dyn std::error::Error>> {
     ///     let chain_id = U256::from(1); // Ethereum Mainnet
-    ///     let client = FrameClient::new(chain_id).await?;
+    ///     let client = FrameClient::new(chain_id, None).await?;
     ///
     ///     Ok(())
     /// }
@@ -48,8 +50,9 @@ impl FrameClient {
     /// This method will return an error if the connection to the Frame wallet cannot be established,
     /// or if the network switch request fails. The error will contain details about the failure.
     /// It will not return an error for an invalid chain ID, as the chain ID is not validated here.
-    pub async fn new(chain_id: U256) -> Result<Self> {
-        let rpc_url = "http://127.0.0.1:1248".to_string();
+    pub async fn new(chain_id: U256, host: Option<&str>) -> Result<Self> {
+        let host = host.unwrap_or("127.0.0.1");
+        let rpc_url = format!("http://{}:1248", host);
         let provider = Arc::new(Provider::<Http>::try_from(rpc_url.clone())?);
         let client = Self { provider, rpc_url };
 
@@ -73,12 +76,12 @@ impl FrameClient {
     /// # Examples
     /// ```no_run
     /// use ethers::types::U256;
-    /// use frame_rs::FrameClient; // Adjust this to the actual path where FrameClient is defined
+    /// use frame_rs::client::FrameClient;
     ///
     /// #[tokio::main]
     /// async fn main() -> Result<(), Box<dyn std::error::Error>> {
     ///     let chain_id = U256::from(1); // Example chain_id, e.g., Ethereum Mainnet
-    ///     let client = FrameClient::new(chain_id).await?;
+    ///     let client = FrameClient::new(chain_id, None).await?;
     ///     
     ///     let current_chain_id = client.get_chain_id().await?;
     ///     println!("Current Chain ID: {}", current_chain_id);
@@ -113,11 +116,11 @@ impl FrameClient {
     /// # Examples
     /// ```no_run
     /// use ethers::types::U256;
-    /// use frame_rs::FrameClient;
+    /// use frame_rs::client::FrameClient;
     ///
     /// #[tokio::main]
     /// async fn main() -> anyhow::Result<()> {
-    ///     let client = FrameClient::new(U256::from(1)).await?; // Assuming Ethereum Mainnet
+    ///     let client = FrameClient::new(U256::from(1), None).await?; // Assuming Ethereum Mainnet
     ///     let rinkeby_chain_id = U256::from(42161); // Arbitrum One
     ///
     ///     client.switch_network(rinkeby_chain_id).await?;
@@ -130,7 +133,7 @@ impl FrameClient {
     /// # Errors
     /// If the network switch cannot be completed, an error is returned with details about the failure.
     /// This might occur if the Frame wallet is not accessible. It will not error for an invalid chain ID.
-    async fn switch_network(&self, chain_id: U256) -> Result<()> {
+    pub async fn switch_network(&self, chain_id: U256) -> Result<()> {
         let client = Client::new();
         let chain_id_hex = format!("{:#x}", chain_id);
 
@@ -174,12 +177,12 @@ impl FrameClient {
     /// # Examples
     /// ```no_run
     /// use ethers::types::{Address, U256};
-    /// use frame_rs::FrameClient;
+    /// use frame_rs::client::FrameClient;
     /// use anyhow::Result;
     ///
     /// #[tokio::main]
     /// async fn main() -> Result<()> {
-    ///     let client = FrameClient::new(U256::from(1)).await?;
+    ///     let client = FrameClient::new(U256::from(1), None).await?;
     ///     let from: Address = "0x...".parse()?;
     ///     let to: Address = "0x...".parse()?;
     ///     let amount = U256::from(1000000000000000000u64); // 1 ETH in Wei
@@ -216,12 +219,13 @@ impl FrameClient {
     ///
     /// # Examples
     /// ```no_run
-    /// use frame_rs::FrameClient;
+    /// use frame_rs::client::FrameClient;
     /// use anyhow::Result;
+    /// use ethers::types::U256;
     ///
     /// #[tokio::main]
     /// async fn main() -> Result<()> {
-    ///     let client = FrameClient::new(U256::from(1)).await?;
+    ///     let client = FrameClient::new(U256::from(1), None).await?;
     ///     let accounts = client.get_accounts().await?;
     ///
     ///     for account in accounts {
@@ -245,7 +249,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_switch_network() {
-        let client = FrameClient::new(U256::from(1)).await.unwrap();
+        let client = FrameClient::new(U256::from(1), None).await.unwrap();
         assert_eq!(client.get_chain_id().await.unwrap(), U256::from(1));
         let next_chain_id = U256::from(42161);
         client.switch_network(next_chain_id).await.unwrap();

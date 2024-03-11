@@ -19,7 +19,7 @@ Add `frame-rs` to your Cargo.toml:
 
 ```toml
 [dependencies]
-frame-rs = "0.1.0"
+frame-rs = "0.1.2"
 ```
 
 ## Quick Start
@@ -27,14 +27,14 @@ frame-rs = "0.1.0"
 Here's a quick example to get you started with `frame-rs`:
 
 ```rust
-use frame_rs::FrameClient;
+use frame_rs::client::FrameClient;
 use ethers::types::U256;
 use anyhow::Result;
 
 #[tokio::main]
 async fn main() -> Result<()> {
     // Initialize the Frame client
-    let client = FrameClient::new(U256::from(1)).await?; // Ethereum Mainnet
+    let client = FrameClient::new(U256::from(1), None).await?; // Ethereum Mainnet
 
     // Switch to Arbitrum One
     let arbitrum_chain_id = U256::from(42161);
@@ -52,13 +52,13 @@ async fn main() -> Result<()> {
 To start interacting with Frame, create a `FrameClient` instance:
 
 ```rust
-    use frame_rs::FrameClient;
+    use frame_rs::client::FrameClient;
     use ethers::types::U256;
 
     #[tokio::main]
     async fn main() {
       let chain_id = U256::from(1); // Example for Ethereum Mainnet
-      let client = FrameClient::new(chain_id).await.expect("Failed to create FrameClient");
+      let client = FrameClient::new(chain_id, None).await.expect("Failed to create FrameClient");
     }
 ```
 
@@ -67,12 +67,13 @@ To start interacting with Frame, create a `FrameClient` instance:
 To switch the connected network:
 
 ```rust
+    use frame_rs::client::FrameClient;
     use ethers::types::U256;
 
     #[tokio::main]
     async fn main() {
       let new_chain_id = U256::from(42161); // Example for Arbitrum One
-      let client = FrameClient::new(U256::from(1)).await.expect("Failed to create FrameClient");
+      let client = FrameClient::new(U256::from(1), None).await.expect("Failed to create FrameClient");
       client.switch_network(new_chain_id).await.expect("Failed to switch network");
     }
 ```
